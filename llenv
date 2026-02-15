@@ -27,20 +27,36 @@ function loadConfig() {
   }
 }
 
+function interpolateValue(val) {
+  if (typeof val !== "string") return val;
+  return val.replace(/\$\{([^}]+)\}|\$([A-Za-z_][A-Za-z0-9_]*)/g, (_, braced, bare) => {
+    const name = braced || bare;
+    return process.env[name] ?? "";
+  });
+}
+
+function interpolateEnv(vars) {
+  const result = {};
+  for (const [k, v] of Object.entries(vars)) {
+    result[k] = interpolateValue(v);
+  }
+  return result;
+}
+
 function resolveEnv(config, name) {
   const envs = config.envs;
   if (!envs || typeof envs !== "object") die("config missing \"envs\" object");
   if (name) {
     if (!envs[name]) die(`env "${name}" not found in config`);
-    return envs[name];
+    return interpolateEnv(envs[name]);
   }
   if (config.defaultEnv) {
     if (!envs[config.defaultEnv]) die(`default env "${config.defaultEnv}" not found in config`);
-    return envs[config.defaultEnv];
+    return interpolateEnv(envs[config.defaultEnv]);
   }
   const envKeys = Object.keys(envs);
   if (envKeys.length === 0) die("no environments in config");
-  return envs[envKeys[0]];
+  return interpolateEnv(envs[envKeys[0]]);
 }
 
 function usage() {

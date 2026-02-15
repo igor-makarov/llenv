@@ -29,6 +29,10 @@ Create `~/.llenv/config.json`:
     "ollama": {
       "OLLAMA_HOST": "http://localhost:11434",
       "OLLAMA_MODELS": "/data/models"
+    },
+    "debug": {
+      "APP_ENV": "development",
+      "DEBUG": "$SHOULD_DEBUG"
     }
   }
 }
@@ -36,6 +40,26 @@ Create `~/.llenv/config.json`:
 
 - `envs` — object mapping environment names to their variables.
 - `defaultEnv` (optional) — env to use when `--env` is omitted. If not set, the first entry in `envs` is used.
+
+### Variable interpolation
+
+Values can reference existing environment variables using `$VAR` or `${VAR}` syntax. Unset variables expand to an empty string.
+
+```json
+{
+  "envs": {
+    "dev": {
+      "DEBUG": "$SHOULD_DEBUG",
+      "GREETING": "hello ${USER}"
+    }
+  }
+}
+```
+
+```bash
+SHOULD_DEBUG=1 llenv --env dev my-app
+# DEBUG=1, GREETING=hello <your username>
+```
 
 ## Usage
 
@@ -81,4 +105,7 @@ Example configs are included in `examples/`:
 LLENV_CONFIG=./examples/simple.json llenv --list
 LLENV_CONFIG=./examples/simple.json llenv --show dev
 LLENV_CONFIG=./examples/simple.json llenv --env prod printenv APP_ENV
+
+# Variable interpolation
+SHOULD_DEBUG=1 LLENV_CONFIG=./examples/interpolation.json llenv --show dev
 ```

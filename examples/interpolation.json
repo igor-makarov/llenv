@@ -1,0 +1,10 @@
+{
+  "defaultEnv": "dev",
+  "envs": {
+    "dev": {
+      "DEBUG": "$SHOULD_DEBUG",
+      "GREETING": "hello ${USER}",
+      "PLAIN": "literal"
+    }
+  }
+}
