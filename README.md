@@ -16,23 +16,20 @@ Create `~/.llenv/config.json`:
 
 ```json
 {
-  "defaultEnv": "dev",
+  "defaultEnv": "litellm",
   "envs": {
-    "dev": {
-      "APP_ENV": "development",
-      "DEBUG": "true"
+    "litellm": {
+      "ANTHROPIC_BASE_URL": "https://litellm.example.com",
+      "ANTHROPIC_AUTH_TOKEN": "$LITELLM_KEY"
     },
-    "prod": {
-      "APP_ENV": "production",
-      "DEBUG": "false"
+    "litellm-local": {
+      "ANTHROPIC_BASE_URL": "http://localhost:4000",
+      "ANTHROPIC_AUTH_TOKEN": "sk-local-proxy-1234"
     },
     "ollama": {
-      "OLLAMA_HOST": "http://localhost:11434",
-      "OLLAMA_MODELS": "/data/models"
-    },
-    "debug": {
-      "APP_ENV": "development",
-      "DEBUG": "$SHOULD_DEBUG"
+      "ANTHROPIC_BASE_URL": "http://localhost:11434",
+      "ANTHROPIC_AUTH_TOKEN": "ollama",
+      "ANTHROPIC_MODEL": "llama3:latest"
     }
   }
 }
@@ -64,20 +61,20 @@ SHOULD_DEBUG=1 llenv --env dev my-app
 ## Usage
 
 ```bash
-# Launch with default env
+# Launch with default env (litellm)
 llenv claude
 
 # Launch with a named env
 llenv --env ollama claude
 
 # Works with any command
-llenv --env prod docker compose up
+llenv --env litellm-local npm start
 
 # List available environments
 llenv --list
 
 # Preview env vars without running anything
-llenv --show prod
+llenv --show ollama
 ```
 
 ## Options
