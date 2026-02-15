@@ -1,0 +1,13 @@
+{
+  "defaultEnv": "dev",
+  "envs": {
+    "dev": {
+      "APP_ENV": "development",
+      "DEBUG": "true"
+    },
+    "prod": {
+      "APP_ENV": "production",
+      "DEBUG": "false"
+    }
+  }
+}

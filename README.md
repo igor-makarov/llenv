@@ -1,6 +1,6 @@
 # llenv
 
-Lightweight CLI to apply environment variables from JSON configs before launching any command. Zero dependencies — just Node.js.
+Lightweight CLI to apply environment variables from a single config before launching any command. Zero dependencies — just Node.js.
 
 ## Install
 
@@ -13,73 +13,73 @@ ln -s "$(pwd)/llenv" /usr/local/bin/llenv
 
 ## Config
 
-Environment files live in `~/.llenv/` as flat JSON objects:
-
-```bash
-mkdir -p ~/.llenv
-```
+All environments live in a single `~/.llenv/config.json`:
 
 ```json
-// ~/.llenv/ollama.json
 {
-  "OLLAMA_HOST": "http://localhost:11434",
-  "OLLAMA_MODELS": "/data/models"
+  "defaultEnv": "dev",
+  "envs": {
+    "dev": {
+      "APP_ENV": "development",
+      "DEBUG": "true"
+    },
+    "prod": {
+      "APP_ENV": "production",
+      "DEBUG": "false"
+    },
+    "ollama": {
+      "OLLAMA_HOST": "http://localhost:11434",
+      "OLLAMA_MODELS": "/data/models"
+    }
+  }
 }
 ```
 
-```json
-// ~/.llenv/config.json  (default)
-{
-  "ANTHROPIC_API_KEY": "sk-ant-..."
-}
-```
+- `defaultEnv` — name of the env to use when `--env` is omitted. If not set, the first entry in `envs` is used.
+- `envs` — object mapping environment names to their variables.
 
 ## Usage
 
 ```bash
-# Launch with a named environment
-llenv --env ollama claude
-
-# Launch with default env (~/.llenv/config.json)
+# Launch with default env
 llenv claude
 
+# Launch with a named env
+llenv --env ollama claude
+
 # Works with any command
-llenv --env staging docker compose up
-llenv --env prod ssh deploy@server
+llenv --env prod docker compose up
 
 # List available environments
 llenv --list
 
 # Preview env vars without running anything
-llenv --show ollama
+llenv --show prod
 ```
 
 ## Options
 
 | Flag | Description |
 |------|-------------|
-| `--env <name>` | Load `~/.llenv/<name>.json` instead of the default |
-| `--list` | List available environment configs |
-| `--show <name>` | Print resolved vars without executing |
+| `--env <name>` | Use a named env from config |
+| `--list` | List available environments |
+| `--show [name]` | Print resolved vars without executing |
 | `--help` | Show help |
 
-## Override config directory
+## Override config path
 
-Set `LLENV_HOME` to use a different directory:
+Set `LLENV_CONFIG` to use a different config file:
 
 ```bash
-LLENV_HOME=/path/to/configs llenv --env prod my-app
+LLENV_CONFIG=./my-config.json llenv --env prod my-app
 ```
 
 ## Try it out
 
-Example configs are included in `examples/simple/`:
+An example config is included in `examples/simple.json`:
 
 ```bash
-export LLENV_HOME=./examples/simple
-
-llenv --list                        # see available envs
-llenv --show test                   # preview vars
-llenv --env test printenv TEST_VAR  # run with test env
-llenv printenv DEFAULT_VAR          # run with default (config.json)
+LLENV_CONFIG=./examples/simple.json llenv --list
+LLENV_CONFIG=./examples/simple.json llenv --show dev
+LLENV_CONFIG=./examples/simple.json llenv --env prod printenv APP_ENV
 ```

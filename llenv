@@ -1,25 +1,57 @@
 #!/usr/bin/env node
 "use strict";
 
-const { readFileSync, readdirSync } = require("fs");
+const { readFileSync, existsSync } = require("fs");
 const { spawnSync } = require("child_process");
-const { join, basename } = require("path");
+const { join } = require("path");
 const { homedir } = require("os");
 
-const LLENV_DIR = process.env.LLENV_HOME || join(homedir(), ".llenv");
+const CONFIG_FILE = process.env.LLENV_CONFIG || join(homedir(), ".llenv", "config.json");
 
 function die(msg) {
   process.stderr.write(`llenv: ${msg}\n`);
   process.exit(1);
 }
 
+function loadConfig() {
+  let raw;
+  try {
+    raw = readFileSync(CONFIG_FILE, "utf8");
+  } catch {
+    die(`config not found: ${CONFIG_FILE}`);
+  }
+  try {
+    return JSON.parse(raw);
+  } catch {
+    die(`invalid JSON in ${CONFIG_FILE}`);
+  }
+}
+
+function resolveEnv(config, name) {
+  const envs = config.envs;
+  if (!envs || typeof envs !== "object") die("config missing \"envs\" object");
+  if (name) {
+    if (!envs[name]) die(`env "${name}" not found in config`);
+    return envs[name];
+  }
+  if (config.defaultEnv) {
+    if (!envs[config.defaultEnv]) die(`default env "${config.defaultEnv}" not found in config`);
+    return envs[config.defaultEnv];
+  }
+  const envKeys = Object.keys(envs);
+  if (envKeys.length === 0) die("no environments in config");
+  return envs[envKeys[0]];
+}
+
 function usage() {
   process.stdout.write(`Usage: llenv [--env <name>] <command> [args...]
 
-Apply environment variables from JSON configs before launching a command.
+Apply environment variables from a config before launching a command.
+
+Config: ${CONFIG_FILE}
 
 Options:
-  --env <name>   Load ~/.llenv/<name>.json (default: ~/.llenv/config.json)
+  --env <name>   Use a named env from config (default: defaultEnv or first entry)
   --list         List available environments
   --show <name>  Print resolved env vars without running a command
   --help         Show this help
@@ -33,52 +65,25 @@ Examples:
 }
 
 function listEnvs() {
-  let entries;
-  try {
-    entries = readdirSync(LLENV_DIR);
-  } catch {
-    die(`no config directory found at ${LLENV_DIR}`);
-  }
-  console.log(`Available environments in ${LLENV_DIR}:`);
-  for (const f of entries) {
-    if (!f.endsWith(".json")) continue;
-    const name = basename(f, ".json");
-    console.log(`  ${name}${name === "config" ? " (default)" : ""}`);
-  }
-}
-
-function loadEnv(file) {
-  let raw;
-  try {
-    raw = readFileSync(file, "utf8");
-  } catch {
-    die(`config not found: ${file}`);
-  }
-  let obj;
-  try {
-    obj = JSON.parse(raw);
-  } catch {
-    die(`invalid JSON in ${file}`);
-  }
-  if (typeof obj !== "object" || obj === null || Array.isArray(obj)) {
-    die(`config must be a JSON object: ${file}`);
-  }
-  for (const [k, v] of Object.entries(obj)) {
-    process.env[k] = String(v);
+  const config = loadConfig();
+  const envs = config.envs;
+  if (!envs || typeof envs !== "object") die("config missing \"envs\" object");
+  const defaultName = config.defaultEnv;
+  const keys = Object.keys(envs);
+  if (keys.length === 0) die("no environments in config");
+  console.log(`Environments in ${CONFIG_FILE}:`);
+  for (const k of keys) {
+    const isDefault = k === defaultName || (!defaultName && k === keys[0]);
+    console.log(`  ${k}${isDefault ? " (default)" : ""}`);
   }
 }
 
 function showEnv(name) {
-  const file = join(LLENV_DIR, `${name}.json`);
-  let raw;
-  try {
-    raw = readFileSync(file, "utf8");
-  } catch {
-    die(`config not found: ${file}`);
-  }
-  const obj = JSON.parse(raw);
-  console.log(`Environment: ${name} (${file})`);
-  for (const [k, v] of Object.entries(obj)) {
+  const config = loadConfig();
+  const env = resolveEnv(config, name);
+  const resolved = name || config.defaultEnv || Object.keys(config.envs)[0];
+  console.log(`Environment: ${resolved}`);
+  for (const [k, v] of Object.entries(env)) {
     console.log(`  ${k}=${v}`);
   }
 }
@@ -98,8 +103,7 @@ while (i < args.length) {
     listEnvs();
     process.exit(0);
   } else if (arg === "--show") {
-    if (i + 1 >= args.length) die("--show requires a name");
-    showEnv(args[i + 1]);
+    showEnv(args[i + 1] || "");
     process.exit(0);
   } else if (arg === "--help" || arg === "-h") {
     usage();
@@ -120,8 +124,12 @@ if (cmd.length === 0) {
 }
 
 // Load env and exec
-const configFile = join(LLENV_DIR, `${envName || "config"}.json`);
-loadEnv(configFile);
+const config = loadConfig();
+const env = resolveEnv(config, envName);
+
+for (const [k, v] of Object.entries(env)) {
+  process.env[k] = String(v);
+}
 
 const result = spawnSync(cmd[0], cmd.slice(1), {
   stdio: "inherit",
