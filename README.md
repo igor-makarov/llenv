@@ -1,19 +1,18 @@
 # llenv
 
-Lightweight CLI to apply environment variables from a single config before launching any command. Zero dependencies — just Node.js.
+Lightweight CLI to apply environment variables from a single JSON config before launching any command. Zero dependencies — just Node.js.
 
 ## Install
 
+### Homebrew
+
 ```bash
-# Copy to somewhere on your PATH
-cp llenv /usr/local/bin/
-# or symlink
-ln -s "$(pwd)/llenv" /usr/local/bin/llenv
+brew install igor-makarov/formulae/llenv
 ```
 
 ## Config
 
-All environments live in a single `~/.llenv/config.json`:
+Create `~/.llenv/config.json`:
 
 ```json
 {
@@ -35,8 +34,8 @@ All environments live in a single `~/.llenv/config.json`:
 }
 ```
 
-- `defaultEnv` — name of the env to use when `--env` is omitted. If not set, the first entry in `envs` is used.
 - `envs` — object mapping environment names to their variables.
+- `defaultEnv` (optional) — env to use when `--env` is omitted. If not set, the first entry in `envs` is used.
 
 ## Usage
 
@@ -76,7 +75,7 @@ LLENV_CONFIG=./my-config.json llenv --env prod my-app
 
 ## Try it out
 
-An example config is included in `examples/simple.json`:
+Example configs are included in `examples/`:
 
 ```bash
 LLENV_CONFIG=./examples/simple.json llenv --list
