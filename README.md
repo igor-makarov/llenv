@@ -70,3 +70,16 @@ Set `LLENV_HOME` to use a different directory:
 ```bash
 LLENV_HOME=/path/to/configs llenv --env prod my-app
 ```
+
+## Try it out
+
+Example configs are included in `examples/simple/`:
+
+```bash
+export LLENV_HOME=./examples/simple
+
+llenv --list                        # see available envs
+llenv --show test                   # preview vars
+llenv --env test printenv TEST_VAR  # run with test env
+llenv printenv DEFAULT_VAR          # run with default (config.json)
+```
