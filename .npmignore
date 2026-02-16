@@ -1,0 +1,12 @@
+# Development files
+.git/
+.github/
+.claude/
+.gitignore
+CLAUDE.md
+
+# Examples (users can view them on GitHub)
+examples/
+
+# Homebrew formula (not needed in npm package)
+Formula/

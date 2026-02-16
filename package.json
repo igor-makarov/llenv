@@ -1,0 +1,37 @@
+{
+  "name": "@igormaka/llenv",
+  "version": "0.0.2",
+  "description": "Lightweight CLI to apply environment variables from a single JSON config before launching any command",
+  "main": "llenv",
+  "bin": {
+    "llenv": "./llenv"
+  },
+  "keywords": [
+    "cli",
+    "environment",
+    "env",
+    "config",
+    "proxy",
+    "llm",
+    "anthropic",
+    "claude"
+  ],
+  "author": "Igor Makarov",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/igor-makarov/llenv.git"
+  },
+  "bugs": {
+    "url": "https://github.com/igor-makarov/llenv/issues"
+  },
+  "homepage": "https://github.com/igor-makarov/llenv#readme",
+  "files": [
+    "llenv",
+    "README.md",
+    "LICENSE"
+  ]
+}
