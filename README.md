@@ -4,10 +4,8 @@ Lightweight CLI to apply environment variables from a single JSON config before 
 
 ## Install
 
-### Homebrew
-
 ```bash
-brew install igor-makarov/formulae/llenv
+npm install -g @igormaka/llenv
 ```
 
 ## Config
